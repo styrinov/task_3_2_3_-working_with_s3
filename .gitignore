@@ -38,3 +38,4 @@ terraform.rc
 .terraform.lock.hcl
 terraform-aws.yml
 runner.txt
+.vscode

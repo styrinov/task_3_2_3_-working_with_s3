@@ -1,0 +1,52 @@
+#!/bin/bash
+set -e
+
+# Define domain (change to your actual domain)
+domain_name="${domain_name}"
+admin_email="admin@${domain_name}"
+
+# Update system and install required packages
+apt-get update -y
+apt-get install -y nginx curl software-properties-common certbot python3-certbot-nginx
+
+# Stop and remove Apache if present
+systemctl stop apache2 || true
+systemctl disable apache2 || true
+apt-get purge -y apache2 apache2-utils apache2-bin apache2.2-common || true
+apt-get autoremove -y
+
+# Get EC2 instance metadata (IMDSv2)
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
+PRIVATE_IP=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
+  http://169.254.169.254/latest/meta-data/local-ipv4)
+PUBLIC_IP=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
+  http://169.254.169.254/latest/meta-data/public-ipv4)
+
+# Create a basic HTML page to serve
+cat <<EOF > /var/www/html/index.html
+<html>
+<body bgcolor="black">
+<h2><font color="gold">Build by Power of Terraform <font color="red"> v0.12</font></h2><br><p>
+<font color="green">Server PublicIP: <font color="aqua">$PUBLIC_IP<br><br>
+<font color="green">Server PrivateIP: <font color="aqua">$PRIVATE_IP<br><br>
+<font color="magenta"><b>Version 1.0</b>
+</body>
+</html>
+EOF
+
+# Ensure Nginx is enabled and running
+systemctl enable nginx
+systemctl restart nginx
+systemctl status nginx
+
+# Optional: wait for DNS propagation
+sleep 30
+
+# Use Certbot to obtain and configure HTTPS
+certbot --nginx -n --agree-tos --redirect \
+  --email "$admin_email" \
+  -d "$domain_name"
+
+# Enable auto-renewal
+systemctl enable certbot.timer
