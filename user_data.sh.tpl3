@@ -53,6 +53,7 @@ cp .env.example .env
 ACCESS_TOKEN_SALT=$(openssl rand -base64 32)
 JWT_SECRET_KEY=$(openssl rand -base64 32)
 POSTGRES_PASSWORD=$(openssl rand -base64 16)
+REDIS_PASSWORD=$(openssl rand -base64 16)
 
 # --- Update .env ---
 cat > .env <<EOF

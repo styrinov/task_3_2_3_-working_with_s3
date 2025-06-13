@@ -1,52 +1,3 @@
-terraform {
-  required_version = ">= 1.3.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-
-  backend "s3" {
-    bucket = "0b9ec6a0-4338-4faf-b5d3-ae79aedd8089-terraform-state-bucket"
-    key    = "terraform_state_test/terraform.tfstate"
-    region = "eu-north-1"
-  }
-}
-
-provider "aws" {
-  region = var.region
-}
-
-# Declare the data source
-data "aws_availability_zones" "availability_zones" {
-  state = "available"
-}
-
-data "aws_caller_identity" "current" {}
-
-data "aws_region" "current" {}
-
-data "aws_vpcs" "my_vpcs" {}
-
-data "aws_ami" "latest_ubuntu" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical (official Ubuntu images)
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
-  }
-}
-
-
-data "aws_route53_zone" "styrinov" {
-  name         = var.my_domain
-  private_zone = false
-}
-
-
 resource "aws_eip" "main" {
   domain = "vpc"
 
@@ -176,9 +127,7 @@ module "web_instance" {
   eip_allocation     = aws_eip.main.id
   attach_eip         = true
 
-  user_data = templatefile("${path.module}/user_data.sh.tpl2", {
-    domain_name = "${var.subdomain}.${var.my_domain}"
-  })
+  user_data = file("${path.module}/user_data.sh")
 
   tags = {
     Name  = "Web Server Build by Terraform"

@@ -51,23 +51,22 @@ cp .env.example .env
 ACCESS_TOKEN_SALT=$(openssl rand -base64 32)
 JWT_SECRET_KEY=$(openssl rand -base64 32)
 POSTGRES_PASSWORD=$(openssl rand -base64 16)
+REDIS_PASSWORD=$(openssl rand -base64 16)
 
 # --- Update .env ---
 cat > .env <<EOF
 ACCESS_TOKEN_SALT=$ACCESS_TOKEN_SALT
 JWT_SECRET_KEY=$JWT_SECRET_KEY
 POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-TRADINGVIEW_SYMBOL=AAPL
+REDIS_PASSWORD=$REDIS_PASSWORD
+COMPOSE_PROJECT_NAME=ghostfolio
 POSTGRES_USER=ghostfolio
 POSTGRES_DB=ghostfolio
-POSTGRES_HOST=db
-POSTGRES_PORT=5432
-HOST=localhost
-PORT=3333
-NODE_ENV=production
+DATABASE_URL=postgresql://ghostfolio:${POSTGRES_PASSWORD}@postgres:5432/ghostfolio?connect_timeout=300&sslmode=prefer
 REDIS_HOST=redis
 REDIS_PORT=6379
 EOF
+
 
 # --- Run Ghostfolio using Docker Compose ---
 sudo docker compose -f ./docker/docker-compose.yml up -d
