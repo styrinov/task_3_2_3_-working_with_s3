@@ -7,7 +7,7 @@ env:
 on:
     push:
       branches:
-        - feature/getting_started_EC2
+        - feature/getting_started_EC2_module
     pull_request:
       branches:
         - main

@@ -166,31 +166,23 @@ resource "aws_security_group" "web_sg" {
   }
 }
 
+module "web_instance" {
+  source             = "./modules/ec2_instance"
+  ami_id             = data.aws_ami.latest_ubuntu.id
+  instance_type      = "t3.micro"
+  subnet_id          = aws_subnet.public.id
+  key_name           = "sergey-key-stockholm"
+  security_group_ids = [aws_security_group.web_sg.id]
+  eip_allocation     = aws_eip.main.id
+  attach_eip         = true
 
-resource "aws_instance" "my_webserver" {
-  ami                    = data.aws_ami.latest_ubuntu.id # ami-05d3e0186c058c4dd
-  instance_type          = "t3.micro"
-  vpc_security_group_ids = [aws_security_group.web_sg.id]
-  #user_data                   = file("user_data.sh")
-  subnet_id                   = aws_subnet.public.id
-  key_name                    = "sergey-key-stockholm"
-  associate_public_ip_address = false
   user_data = templatefile("${path.module}/user_data.sh.tpl2", {
     domain_name = "${var.subdomain}.${var.my_domain}"
   })
-
-  metadata_options {
-    http_endpoint = "enabled"
-    http_tokens   = "required"
-  }
 
   tags = {
     Name  = "Web Server Build by Terraform"
     Owner = var.lord_of_terraform
   }
-}
 
-resource "aws_eip_association" "eip_assoc" {
-  instance_id   = aws_instance.my_webserver.id
-  allocation_id = aws_eip.main.id
 }
