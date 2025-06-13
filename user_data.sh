@@ -52,6 +52,8 @@ ACCESS_TOKEN_SALT=$(openssl rand -base64 32)
 JWT_SECRET_KEY=$(openssl rand -base64 32)
 POSTGRES_PASSWORD=$(openssl rand -base64 16)
 REDIS_PASSWORD=$(openssl rand -base64 16)
+POSTGRES_USER="ghostfolio"
+POSTGRES_DB="ghostfolio"
 
 # --- Update .env ---
 cat > .env <<EOF
@@ -60,9 +62,9 @@ JWT_SECRET_KEY=$JWT_SECRET_KEY
 POSTGRES_PASSWORD=$POSTGRES_PASSWORD
 REDIS_PASSWORD=$REDIS_PASSWORD
 COMPOSE_PROJECT_NAME=ghostfolio
-POSTGRES_USER=ghostfolio
-POSTGRES_DB=ghostfolio
-DATABASE_URL=postgresql://ghostfolio:${POSTGRES_PASSWORD}@postgres:5432/ghostfolio?connect_timeout=300&sslmode=prefer
+POSTGRES_USER=$POSTGRES_USER
+POSTGRES_DB=$POSTGRES_DB
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connect_timeout=300&sslmode=prefer
 REDIS_HOST=redis
 REDIS_PORT=6379
 EOF
