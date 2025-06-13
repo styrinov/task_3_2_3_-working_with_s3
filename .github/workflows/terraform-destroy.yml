@@ -1,4 +1,4 @@
-name: Terraform Destroy (Manual)
+name: Terraform Destroy(Manual)
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
