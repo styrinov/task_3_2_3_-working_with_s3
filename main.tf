@@ -127,11 +127,10 @@ module "web_instance" {
   eip_allocation     = aws_eip.main.id
   attach_eip         = true
 
-  user_data = file("${path.module}/user_data.sh")
+  user_data = file("${path.module}/user_data2.sh")
 
   tags = {
     Name  = "Web Server Build by Terraform"
     Owner = var.lord_of_terraform
   }
-
 }
