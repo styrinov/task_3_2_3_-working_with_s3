@@ -15,3 +15,9 @@ variable "attach_eip" {
 }
 variable "user_data" { default = "" }
 variable "tags" { type = map(string) }
+
+variable "iam_instance_profile" {
+  description = "IAM instance profile to attach to the EC2 instance"
+  type        = string
+  default     = null
+}

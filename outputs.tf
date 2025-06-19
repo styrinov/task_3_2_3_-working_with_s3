@@ -37,3 +37,7 @@ output "eip_public_ip" {
 output "ec2_public_ip" {
   value = module.web_instance.public_ip
 }
+
+output "aws_route53_record" {
+  value = aws_route53_record.main.name
+}

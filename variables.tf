@@ -7,7 +7,7 @@ variable "region" {
 variable "my_domain" {
   description = "Hosted zone name"
   type        = string
-  default     = "styrinov.com"
+  default     = "styrinov.com.ua"
 }
 
 variable "subdomain" {
@@ -20,4 +20,10 @@ variable "lord_of_terraform" {
   description = "Owner of this project"
   type        = string
   default     = "Serhii Tyrinov"
+}
+
+variable "backup_bucket_name" {
+  description = "The name of the S3 bucket used for EC2 backup storage"
+  type        = string
+  default     = "my-backup-bucket-0e407885-3158-4157-bfa3-a57a40f1b561"
 }
