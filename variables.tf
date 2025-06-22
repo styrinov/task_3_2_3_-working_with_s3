@@ -27,3 +27,15 @@ variable "backup_bucket_name" {
   type        = string
   default     = "my-backup-bucket-0e407885-3158-4157-bfa3-a57a40f1b561"
 }
+
+variable "redis_user_name" {
+  type        = string
+  description = "Redis user name"
+}
+
+variable "redis_password" {
+  type        = string
+  description = "Redis user password"
+  sensitive   = true
+}
+

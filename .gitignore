@@ -39,3 +39,4 @@ terraform.rc
 terraform-aws.yml
 runner.txt
 .vscode
+ec2_key.pem

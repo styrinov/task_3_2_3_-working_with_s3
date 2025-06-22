@@ -24,5 +24,10 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
+    - name: Set up SSH private key
+      run: |
+        echo "${{ secrets.EC2_PRIVATE_KEY }}" > ec2_key.pem
+        chmod 600 ec2_key.pem     
+
     - name: Terraform Destroy
       run: terraform destroy -auto-approve

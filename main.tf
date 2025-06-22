@@ -70,7 +70,7 @@ module "web_instance" {
   security_group_ids   = [aws_security_group.web_sg.id]
   eip_allocation       = aws_eip.main.id
   attach_eip           = true
-  user_data            = file("${path.module}/user_data.sh")
+  user_data            = file("${path.module}/user_data2.sh")
   iam_instance_profile = aws_iam_instance_profile.ec2_backup_profile.name
 
   tags = {
@@ -78,6 +78,52 @@ module "web_instance" {
     Owner = var.lord_of_terraform
   }
 }
+
+resource "null_resource" "prepare_deploy_script" {
+  depends_on = [module.web_instance]
+
+  # Step 1: Ensure /home/ubuntu/projects exists
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p /home/ubuntu/projects"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      host        = module.web_instance.public_ip
+      private_key = file("ec2_key.pem")
+    }
+  }
+
+  # Step 2: Upload deploy.sh
+  provisioner "file" {
+    source      = "${path.module}/deploy.sh"
+    destination = "/home/ubuntu/projects/deploy.sh"
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      host        = module.web_instance.public_ip
+      private_key = file("ec2_key.pem")
+    }
+  }
+
+  # Step 3: Make script executable
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /home/ubuntu/projects/deploy.sh"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      host        = module.web_instance.public_ip
+      private_key = file("ec2_key.pem")
+    }
+  }
+}
+
 
 #===========================================================
 
@@ -88,8 +134,8 @@ module "vpc" {
   name = "main-vpc"
   cidr = "10.0.0.0/16"
 
-  azs            = slice(data.aws_availability_zones.availability_zones.names, 0, 1)
-  public_subnets = ["10.0.1.0/24"]
+  azs            = slice(data.aws_availability_zones.availability_zones.names, 0, 2)
+  public_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
 
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -188,4 +234,15 @@ resource "aws_iam_role_policy_attachment" "attach_backup_policy" {
 resource "aws_iam_instance_profile" "ec2_backup_profile" {
   name = "EC2BackupInstanceProfile"
   role = aws_iam_role.ec2_backup_role.name
+}
+
+module "redis_oss" {
+  source          = "./modules/redis"
+  name            = "ghostfolio"
+  owner           = var.lord_of_terraform
+  vpc_id          = module.vpc.vpc_id
+  subnet_ids      = module.vpc.public_subnets
+  allowed_sg_id   = aws_security_group.web_sg.id
+  redis_user_name = var.redis_user_name
+  redis_password  = var.redis_password
 }

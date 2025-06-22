@@ -41,3 +41,7 @@ output "ec2_public_ip" {
 output "aws_route53_record" {
   value = aws_route53_record.main.name
 }
+
+output "redis_primary_endpoint" {
+  value = module.redis_oss.primary_endpoint
+}
