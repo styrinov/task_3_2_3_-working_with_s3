@@ -42,6 +42,22 @@ output "aws_route53_record" {
   value = aws_route53_record.main.name
 }
 
-output "redis_primary_endpoint" {
-  value = module.redis_oss.primary_endpoint
+output "bastion_ip" {
+  description = "Public IP of bastion host"
+  value       = var.ver.env == "dev" ? aws_eip.bastion_eip[0].public_ip : null
+}
+
+output "bastion_dns" {
+  description = "DNS name of bastion host"
+  value       = var.ver.env == "dev" ? aws_route53_record.bastion_dns[0].fqdn : null
+}
+
+output "rds_endpoint" {
+  description = "The RDS PostgreSQL endpoint"
+  value       = module.postgres_rds.endpoint
+}
+
+output "rds_port" {
+  description = "The RDS PostgreSQL port"
+  value       = module.postgres_rds.port
 }

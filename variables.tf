@@ -22,20 +22,19 @@ variable "lord_of_terraform" {
   default     = "Serhii Tyrinov"
 }
 
-variable "backup_bucket_name" {
-  description = "The name of the S3 bucket used for EC2 backup storage"
+variable "db_password" {
+  description = "Password for RDS PostgreSQL"
   type        = string
-  default     = "my-backup-bucket-0e407885-3158-4157-bfa3-a57a40f1b561"
-}
-
-variable "redis_user_name" {
-  type        = string
-  description = "Redis user name"
-}
-
-variable "redis_password" {
-  type        = string
-  description = "Redis user password"
   sensitive   = true
 }
+
+variable "ver" {
+  type = object({
+    env = string
+  })
+}
+
+# Example:
+# ver = { env = "dev" }
+
 
