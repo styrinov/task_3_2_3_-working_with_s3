@@ -56,7 +56,7 @@ module "web_asg" {
   max_size           = 3
   target_group_arns  = [module.web_alb.target_group_arn]
   #user_data          = file("${path.root}/asg_user_data.sh")
-  user_data          = base64encode(file("${path.module}/asg_user_data.sh"))
+  user_data = base64encode(file("${path.module}/asg_user_data.sh"))
 
   tags = {
     Owner = var.lord_of_terraform
