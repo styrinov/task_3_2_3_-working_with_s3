@@ -1,0 +1,65 @@
+name: Terraform CI on PR
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}  
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+  TF_VAR_ver: ${{ vars.ver }}
+  TF_VAR_docker_compose_bucket_name: ${{ vars.S3_PATH_TO_COMPOSE_FILE }}
+  TF_VAR_private_key_path: ${{ secrets.PRIVATE_KEY_PATH }}
+  TF_VAR_key_name: ${{ secrets.KEY_NAME }}
+  TF_VAR_postgres_password: ${{ secrets.DB_PASSWORD }}
+  TF_VAR_access_token_salt: ${{ secrets.ACCESS_TOKEN_SALT }}
+  TF_VAR_jwt_secret_key: ${{ secrets.JWT_SECRET_KEY }}
+  TF_VAR_redis_password: ${{ secrets.REDIS_PASSWORD }}
+
+on:
+    push:
+      branches:
+        - feature/going_scalable
+    pull_request:
+      branches:
+        - main
+
+jobs:
+    terraform-plan:
+      runs-on: ubuntu-latest
+  
+      concurrency:
+        group: terraform-${{ github.ref }}
+        cancel-in-progress: true
+  
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+  
+        - name: Set up Terraform
+          uses: hashicorp/setup-terraform@v3
+          with:
+            terraform_version: latest
+  
+        - name: Install TFLint
+          run: |
+            curl -sLo /tmp/tflint.zip https://github.com/terraform-linters/tflint/releases/download/v0.47.0/tflint_linux_amd64.zip
+            sudo unzip /tmp/tflint.zip -d /usr/local/bin/
+            tflint --version
+  
+        - name: Terraform Init
+          run: terraform init -input=false
+  
+        - name: Terraform Format Check
+          run: terraform fmt -recursive -check
+
+        - name: Set up SSH private key
+          run: |
+            echo "${{ secrets.EC2_PRIVATE_KEY }}" > ec2_key.pem
+            chmod 600 ec2_key.pem
+  
+        - name: Terraform Validate
+          run: terraform validate
+  
+        - name: Terraform Lint (TFLint)
+          run: tflint       
+  
+        - name: Terraform Plan
+          run: terraform plan -input=false
