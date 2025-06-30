@@ -61,3 +61,11 @@ output "rds_port" {
   description = "The RDS PostgreSQL port"
   value       = module.postgres_rds.port
 }
+
+output "alb_dns_name" {
+  value = module.web_alb.alb_dns_name
+}
+
+output "alb_zone_id" {
+  value = module.web_alb.alb_zone_id
+}

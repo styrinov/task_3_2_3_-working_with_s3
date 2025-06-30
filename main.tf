@@ -1,30 +1,3 @@
-resource "aws_eip" "main" {
-  domain = "vpc"
-
-  tags = {
-    Name  = "main-eip"
-    Owner = var.lord_of_terraform
-  }
-}
-
-resource "aws_route53_record" "main" {
-  zone_id = data.aws_route53_zone.styrinov.zone_id
-  name    = "${var.subdomain}.${var.my_domain}"
-  type    = "A"
-  ttl     = 300
-  records = [aws_eip.main.public_ip]
-}
-
-resource "aws_route53_record" "bastion_dns" {
-  count   = var.ver.env == "dev" ? 1 : 0
-  zone_id = data.aws_route53_zone.styrinov.zone_id
-
-  name    = "bastion.${var.ver.env}.${var.my_domain}"
-  type    = "A"
-  ttl     = 300
-  records = [aws_eip.bastion_eip[0].public_ip]
-}
-
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
@@ -68,3 +41,37 @@ module "postgres_rds" {
   subnet_ids             = module.vpc.private_subnets
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
 }
+
+
+module "web_asg" {
+  source             = "./modules/ec2_autoscaling_group"
+  name               = "ghostfolio"
+  ami_id             = "ami-052c508c0fad5d7cd"
+  instance_type      = "t3.micro"
+  key_name           = var.key_name
+  security_group_ids = [aws_security_group.web_sg.id]
+  subnet_ids         = module.vpc.public_subnets
+  desired_capacity   = 2
+  min_size           = 1
+  max_size           = 3
+  target_group_arns  = [module.web_alb.target_group_arn]
+  #user_data          = file("${path.root}/asg_user_data.sh")
+  user_data          = base64encode(file("${path.module}/asg_user_data.sh"))
+
+  tags = {
+    Owner = var.lord_of_terraform
+  }
+}
+
+module "web_alb" {
+  source            = "./modules/alb"
+  name              = "ghostfolio"
+  vpc_id            = module.vpc.vpc_id
+  subnets           = module.vpc.public_subnets
+  security_group_id = aws_security_group.alb_sg.id
+  certificate_arn   = aws_acm_certificate.web_cert.arn
+  tags = {
+    Owner = var.lord_of_terraform
+  }
+}
+

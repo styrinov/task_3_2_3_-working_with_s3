@@ -41,3 +41,4 @@ runner.txt
 .vscode
 ec2_key.pem
 .secrets
+.env

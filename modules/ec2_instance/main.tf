@@ -8,6 +8,7 @@ resource "aws_instance" "this" {
   user_data                   = var.user_data
   iam_instance_profile        = var.iam_instance_profile
 
+
   metadata_options {
     http_endpoint = "enabled"
     http_tokens   = "required"
